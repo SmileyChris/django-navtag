@@ -1,0 +1,11 @@
+{% extends base %}
+{% load navtag %}
+
+{% block nav %}
+{% nav "home" %}
+{{ block.super }}
+{% endblock %}
+
+{% block main %}
+{% if nav.home %}HOME{% else %}huh?{% endif %}
+{% endblock %}

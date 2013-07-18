@@ -10,11 +10,24 @@ BASIC_TEMPLATE = '''
 {% if nav.banana %}Banana{% endif %}
 '''
 
+FOR_TEMPLATE = '''
+{% load navtag %}
+{% nav "banana" for othernav %}
+{% if othernav.apple %}Apple{% endif %}
+{% if othernav.banana %}Banana{% endif %}
+'''
+
 
 class NavTagTest(TestCase):
 
     def test_basic(self):
         t = template.Template(BASIC_TEMPLATE)
+        content = t.render(template.Context())
+        self.assertNotIn('Apple', content)
+        self.assertIn('Banana', content)
+
+    def test_for(self):
+        t = template.Template(FOR_TEMPLATE)
         content = t.render(template.Context())
         self.assertNotIn('Apple', content)
         self.assertIn('Banana', content)
@@ -35,6 +48,12 @@ class NavTagTest(TestCase):
         self.assertNotIn('  - Apple (active)', content)
         self.assertNotIn('  - Banana (active)', content)
 
+        content = render_to_string('navtag_tests/submenu/base_fruit.txt')
+        self.assertNotIn('- Home (active)', content)
+        self.assertIn('- Fruit (active)', content)
+        self.assertNotIn('  - Apple (active)', content)
+        self.assertNotIn('  - Banana (active)', content)
+
         content = render_to_string('navtag_tests/submenu/apple.txt')
         self.assertNotIn('- Home (active)', content)
         self.assertIn('- Fruit (active)', content)
@@ -46,3 +65,14 @@ class NavTagTest(TestCase):
         self.assertIn('- Fruit (active)', content)
         self.assertNotIn('  - Apple (active)', content)
         self.assertIn('  - Banana (active)', content)
+
+    def test_set_context(self):
+        name = 'navtag_tests/context/home.txt'
+        content = render_to_string(name, {'base': 'navtag_tests/base.txt'})
+        self.assertIn('- Home (active)', content)
+        self.assertNotIn('HOME', content)
+
+        content = render_to_string(
+            name, {'base': 'navtag_tests/context/base.txt'})
+        self.assertIn('- Home (active)', content)
+        self.assertIn('HOME', content)
