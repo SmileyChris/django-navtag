@@ -23,9 +23,9 @@ class NavNode(template.Node):
             return ''
         item = self.item.resolve(context)
         item = item and smart_str(item)
-        if not item:
-            return ''
         value = True
+        if not item:
+            item = ''
         for part in reversed(item.split('.')):
             new_item = {}
             new_item[part] = value
@@ -37,6 +37,7 @@ class NavNode(template.Node):
         if not isinstance(nav, dict):
             nav = {}
             context[self.var_name] = nav
+        nav.clear()
         nav.update(new_item)
         return ''
 
