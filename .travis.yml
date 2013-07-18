@@ -2,9 +2,9 @@ language: python
 matrix:
   include:
      - python: "2.7"
-       env: ENVLIST=readme,1.4.x,1.5.x,master
+       env: ENVLIST=readme,1.4.X,1.5.X,master
      - python: "3.3"
-       env: ENVLIST=py33-1.5.x
+       env: ENVLIST=py33-1.5.X
 install:
   - "pip install . tox --use-mirrors"
 script: tox -e $ENVLIST
