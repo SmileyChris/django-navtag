@@ -3,8 +3,8 @@
 
 A simple Django template tag to handle navigation item selection.
 
-.. image:: https://secure.travis-ci.org/ipmb/django-navtag.png?branch=master
-   :target: http://travis-ci.org/ipmb/django-navtag
+.. image:: https://secure.travis-ci.org/SmileyChris/django-navtag.png?branch=master
+   :target: http://travis-ci.org/SmileyChris/django-navtag
 
 Example
 -------
