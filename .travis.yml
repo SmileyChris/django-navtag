@@ -1,6 +1,6 @@
 language: python
 matrix:
-  - include:
+  include:
      - python: "2.7"
        env: ENVLIST=readme,1.4.x,1.5.x,master
      - python: "3.3"
