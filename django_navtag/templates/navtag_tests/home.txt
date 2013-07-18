@@ -1,4 +1,5 @@
 {% extends "navtag_tests/base.txt" %}
+{% load navtag %}
 
 {% block nav %}
 {% nav "home" %}

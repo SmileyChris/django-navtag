@@ -20,28 +20,28 @@ class NavTagTest(TestCase):
         self.assertIn('Banana', content)
 
     def test_basic_extends(self):
-        content = render_to_string('navtag_tests/home.html')
+        content = render_to_string('navtag_tests/home.txt')
         self.assertIn('- Home (active)', content)
         self.assertNotIn('- Contact (active)', content)
 
-        content = render_to_string('navtag_tests/contact.html')
+        content = render_to_string('navtag_tests/contact.txt')
         self.assertNotIn('- Home (active)', content)
         self.assertIn('- Contact (active)', content)
 
     def test_heirarchical(self):
-        content = render_to_string('navtag_tests/submenu/home.html')
+        content = render_to_string('navtag_tests/submenu/home.txt')
         self.assertIn('- Home (active)', content)
         self.assertNotIn('- Fruit (active)', content)
         self.assertNotIn('  - Apple (active)', content)
         self.assertNotIn('  - Banana (active)', content)
 
-        content = render_to_string('navtag_tests/submenu/apple.html')
+        content = render_to_string('navtag_tests/submenu/apple.txt')
         self.assertNotIn('- Home (active)', content)
         self.assertIn('- Fruit (active)', content)
         self.assertIn('  - Apple (active)', content)
         self.assertNotIn('  - Banana (active)', content)
 
-        content = render_to_string('navtag_tests/submenu/banana.html')
+        content = render_to_string('navtag_tests/submenu/banana.txt')
         self.assertNotIn('- Home (active)', content)
         self.assertIn('- Fruit (active)', content)
         self.assertNotIn('  - Apple (active)', content)
