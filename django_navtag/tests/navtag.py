@@ -1,7 +1,8 @@
-from django.test import TestCase
 from django import template
+from django.test import TestCase
 from django.template.loader import render_to_string
 
+from django_navtag.templatetags.navtag import NavNode
 
 BASIC_TEMPLATE = '''
 {% load navtag %}
@@ -87,3 +88,12 @@ class NavTagTest(TestCase):
             name, {'base': 'navtag_tests/context/base.txt'}).strip()
         self.assertIn('- Home (active)', content)
         self.assertIn('HOME', content)
+
+    def test_repr(self):
+        node = NavNode()
+        self.assertEqual(repr(node), "<Nav node>")
+
+    def test_invalid_args(self):
+        self.assertRaises(
+            template.TemplateSyntaxError, template.Template,
+            '''{% load navtag %}{% nav 'test' unexpected %}''')
