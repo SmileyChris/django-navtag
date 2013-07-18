@@ -1,0 +1,4 @@
+{% block nav %}
+- Home {% if nav.home %}(active){% endif %}
+- Contact {% if nav.contact %}(active){% endif %}
+{% endblock %}

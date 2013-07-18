@@ -1,0 +1,6 @@
+{% block nav %}
+- Home {% if nav.home %}(active){% endif %}
+- Fruit {% if nav.fruit %}(active){% endif %}
+  - Apple {% if nav.fruit.apple %}(active){% endif %}
+  - Banana {% if nav.fruit.banana %}(active){% endif %}
+{% endblock %}

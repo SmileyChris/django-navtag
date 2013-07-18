@@ -1,0 +1,6 @@
+{% extends "navtag_tests/submenu/base.txt" %}
+
+{% block nav %}
+{% nav "home" %}
+{{ block.super }}
+{% endblock %}
