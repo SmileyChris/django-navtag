@@ -1,4 +1,4 @@
-{% extends base %}
+{% extends "navtag_tests/base.txt" %}
 {% load navtag %}
 
 {% block nav %}

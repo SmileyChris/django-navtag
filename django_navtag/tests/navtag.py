@@ -77,15 +77,8 @@ class NavTagTest(TestCase):
         self.assertNotIn('  - Apple (active)', content)
         self.assertIn('  - Banana (active)', content)
 
-    def test_set_context(self):
-        name = 'navtag_tests/context/home.txt'
-        content = render_to_string(
-            name, {'base': 'navtag_tests/base.txt'}).strip()
-        self.assertIn('- Home (active)', content)
-        self.assertNotIn('HOME', content)
-
-        content = render_to_string(
-            name, {'base': 'navtag_tests/context/base.txt'}).strip()
+    def test_top_context(self):
+        content = render_to_string('navtag_tests/context/home.txt').strip()
         self.assertIn('- Home (active)', content)
         self.assertIn('HOME', content)
 
@@ -97,3 +90,20 @@ class NavTagTest(TestCase):
         self.assertRaises(
             template.TemplateSyntaxError, template.Template,
             '''{% load navtag %}{% nav 'test' unexpected %}''')
+
+    def test_backwards_compatible_empty_tag(self):
+        content = template.Template(
+            '{% load navtag %}{% nav %}').render(template.Context())
+        self.assertEqual(content, '')
+
+        content = template.Template(
+            '{% load navtag %}{% nav for sidenav %}').render(template.Context())
+        self.assertEqual(content, '')
+
+    def test_yell_if_context_variable_changed(self):
+        t = template.Template('{% load navtag %}{% nav "test" %}{{ nav }}')
+        c = template.Context({'nav': 'anything'})
+        c.update({'nav': 'test'})
+        self.assertRaises(
+            template.TemplateSyntaxError,
+            t.render, c)

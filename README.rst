@@ -62,14 +62,3 @@ context variable name, call ``{% nav [item] for [var_name] %}``::
 	{% nav "home" for sidenav %}
 	{{ block.super }}
 	{% endblock %}
-
-
-Using ``{% nav %}`` across multiple tags
-----------------------------------------
-
-To use this tag across ``{% block %}`` tags (or other context-stacking template
-tags such as ``{% for %}``), initialize the tag at the start of your base
-template::
-
-    {# Set up the variable for use across context-stacking tags #}
-    {% nav %} or {% nav for sidenav %}

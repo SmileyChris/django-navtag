@@ -12,15 +12,29 @@ class NavNode(template.Node):
         self.var_name = var_name or 'nav'
 
     def render(self, context):
-        # If the nav variable is already set (to a non-empty value), don't do
-        # anything.
-        if context.get(self.var_name):
-            return ''
-        # If self.item was blank, just set the nav variable to the context
-        # (useful to put the nav in a higher context stack)
+        # If self.item was blank, do nothing (it's only valid for backwards
+        # compatibility).
         if not self.item:
-            context[self.var_name] = {}
             return ''
+
+        first_context_stack = context.dicts[0]
+        nav = first_context_stack.get(self.var_name)
+        if nav is not context.get(self.var_name):
+            raise template.TemplateSyntaxError(
+                "'{}' variable has been altered in current context"
+                .format(self.var_name))
+
+        if nav:
+            # If the nav variable is already set, don't do anything.
+            return ''
+
+        if not isinstance(nav, dict):
+            nav = {}
+            # Copy the stack to avoid leaking into other contexts.
+            new_first_context_stack = first_context_stack.copy()
+            new_first_context_stack[self.var_name] = nav
+            context.dicts[0] = new_first_context_stack
+
         item = self.item.resolve(context)
         item = item and smart_str(item)
         value = True
@@ -30,13 +44,7 @@ class NavNode(template.Node):
             new_item = {}
             new_item[part] = value
             value = new_item
-        # The nav variable could have been set (as an empty dict) on a higher
-        # context stack. Try getting it from the context, otherwise set it to
-        # the current context stack.
-        nav = context.get(self.var_name)
-        if not isinstance(nav, dict):
-            nav = {}
-            context[self.var_name] = nav
+
         nav.clear()
         nav.update(new_item)
         return ''
@@ -52,9 +60,6 @@ def nav(parser, token):
 
     Example usage::
 
-        {# Set up the variable for use across context-stacking tags #}
-        {% nav %} or {% nav for mynav %}
-
         {# Set the context so {{ nav.home }} (or {{ mynav.home }}) is True #}
         {% nav "home" %} or {% nav "home" for mynav %}
 
@@ -63,10 +68,6 @@ def nav(parser, token):
 
     By default, this tag creates a ``nav`` context variable. To use an
     alternate context variable name, call ``{% nav [item] for [var_name] %}``.
-
-    To use this tag across ``{% block %}`` tags (or other context-stacking
-    template tags such as ``{% for %}``), call the tag without specifying an
-    item.
 
     Your HTML navigation template should look something like::
 
