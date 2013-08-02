@@ -1,0 +1,10 @@
+{% load navtag %}
+
+{% block nav %}
+{% nav text " [is active]" %}
+- Home{{ nav.home }}
+- Contact{{ nav.contact }}
+{% endblock %}
+
+{% block main %}
+{% endblock %}

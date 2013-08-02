@@ -107,3 +107,35 @@ class NavTagTest(TestCase):
         self.assertRaises(
             template.TemplateSyntaxError,
             t.render, c)
+
+    def test_nav_text(self):
+        content = (
+            template.Template('{% load navtag %}{% nav text "THIS" %}')
+            .render(template.Context()))
+        self.assertEqual(content, '')
+
+    def test_nav_text_none(self):
+        content = render_to_string('navtag_tests/text/base.txt').strip()
+        self.assertEqual(content, '- Home\n- Contact')
+
+    def test_nav_text_set(self):
+        content = render_to_string('navtag_tests/text/home.txt').strip()
+        self.assertIn('Home [is active]', content)
+        self.assertNotIn('Contact [is active]', content)
+
+        content = render_to_string('navtag_tests/text/contact.txt').strip()
+        self.assertNotIn('Home [is active]', content)
+        self.assertIn('Contact [is active]', content)
+
+    def test_nav_default_text(self):
+        content = (
+            template.Template(
+                '{% load navtag %}{% nav "fruit" %}{{ nav.fruit }}')
+            .render(template.Context(autoescape=False))).strip()
+        self.assertEqual(content, "True")
+
+        content = (
+            template.Template(
+                '{% load navtag %}{% nav "fruit.banana" %}{{ nav.fruit }}')
+            .render(template.Context(autoescape=False))).strip()
+        self.assertEqual(content, "{'banana': True}")

@@ -1,0 +1,7 @@
+{% extends "navtag_tests/text/base.txt" %}
+{% load navtag %}
+
+{% block nav %}
+{% nav "contact" %}
+{{ block.super }}
+{% endblock %}

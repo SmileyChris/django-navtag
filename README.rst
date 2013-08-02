@@ -18,14 +18,13 @@ Add the app to your ``INSTALLED_APPS`` setting::
 
 Give your base template a navigation block something like this::
 
+    {% load navtag %}
+
     {% block nav %}
+    {% nav text ' class="selected"' %}
     <ul class="nav">
-        <li{% if nav.home %} class="selected"{% endif %}>
-            <a href="/">Home</a>
-        </li>
-        <li{% if nav.about %} class="selected"{% endif %}>
-            <a href="/about/">About</a>
-        </li>
+        <li{{ nav.home }}><a href="/">Home</a></li>
+        <li{{ nav.about }}><a href="/about/">About</a></li>
     </ul>
     {% endblock %}
 
@@ -40,8 +39,8 @@ In your templates, extend the base and set the navigation location::
 
 .. note::
     This works for multiple levels of template inheritance, due to the fact
-    that the tag only does anything if the ``nav`` context variable does not
-    exist. So only the first ``{% nav %}`` call found will ever be processed.
+    that only the first ``{% nav %}`` call found will change the ``nav``
+    context variable.
 
 
 Hierarchical navigation
@@ -65,3 +64,25 @@ context variable name, call ``{% nav [item] for [var_name] %}``::
 	{% nav "home" for sidenav %}
 	{{ block.super }}
 	{% endblock %}
+
+
+Setting the text output by the nav variable
+-------------------------------------------
+
+As shown in the initial example, you can set the text return value of the
+``nav`` context variable. Use the format ``{% nav text [content] %}``. For
+example::
+
+    {% nav text "active" %}
+    <ul>
+    <li class="{{ nav.home }}">Home</li>
+    <li class="{{ nav.contact }}">Contact</li>
+    </ul>
+
+Alternately, you can use boolean comparison of the context variable rather than
+text value::
+
+    <section{% if nav.home %} class="wide"{% endif %}>
+
+If using a different context variable name, use the format
+``{% nav text [content] for [var_name] %}``.
