@@ -1,6 +1,7 @@
 from django import template
-from django.utils import six
+from django.utils import six, safestring
 from django.utils.encoding import smart_str, python_2_unicode_compatible
+
 
 register = template.Library()
 
@@ -16,7 +17,7 @@ class Nav(object):
         return Nav(self._tree[key], root=self._root)
 
     def __str__(self):
-        return six.text_type(self._text)
+        return safestring.mark_safe(six.text_type(self._text))
 
     def __nonzero__(self):
         return bool(self._tree)

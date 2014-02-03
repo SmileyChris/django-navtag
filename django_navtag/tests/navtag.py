@@ -139,3 +139,11 @@ class NavTagTest(TestCase):
                 '{% load navtag %}{% nav "fruit.banana" %}{{ nav.fruit }}')
             .render(template.Context(autoescape=False))).strip()
         self.assertEqual(content, "{'banana': True}")
+
+    def test_escaping(self):
+        content = (
+            template.Template(
+                '''{% load navtag %}{% nav text ' class="active"' %}'''
+                '<p{{ nav }}>{{ name }}</p>')
+            .render(template.Context({'name': "Mc'D"}))).strip()
+        self.assertEqual(content, '''<p class="active">Mc&#39;D</p>''')
