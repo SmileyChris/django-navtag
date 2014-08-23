@@ -54,7 +54,7 @@ class NavNode(template.Node):
         nav = first_context_stack.get(self.var_name)
         if nav is not context.get(self.var_name):
             raise template.TemplateSyntaxError(
-                "'{}' variable has been altered in current context"
+                "'{0}' variable has been altered in current context"
                 .format(self.var_name))
 
         if not isinstance(nav, Nav):
@@ -167,7 +167,7 @@ def nav(parser, token):
         compile_filter = keys.pop(key)
         if compile_filter:
             value = parser.compile_filter(value)
-        node_kwargs['var_{}'.format(key)] = value
+        node_kwargs['var_{0}'.format(key)] = value
 
     if len(bits) > 1:
         # Text argument doesn't expect an item.
