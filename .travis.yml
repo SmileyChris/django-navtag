@@ -1,5 +1,12 @@
 language: python
 python: 2.7
-env: TOX_ENV=readme,py27,py33,py34,old,lts,master
+env:
+    - TOX_ENV=readme
+    - TOX_ENV=py27
+    - TOX_ENV=py33
+    - TOX_ENV=py34
+    - TOX_ENV=old
+    - TOX_ENV=lts
+    - TOX_ENV=master
 install: pip install tox
 script: tox -e $TOX_ENV
