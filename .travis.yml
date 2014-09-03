@@ -1,15 +1,5 @@
 language: python
-python:
-  - "2.7"
-env: ENVLIST=readme,1.5.X,1.6.X,master
-matrix:
-  include:
-     - python: "2.6"
-       env: ENVLIST=1.4.X
-     - python: "3.3"
-       env: ENVLIST=py33-1.6.X
-     - python: "3.4"
-       env: ENVLIST=py34-1.6.X
-install:
-  - "pip install . tox"
-script: tox -e $ENVLIST
+python: 2.7
+env: TOX_ENV=readme,py27,py33,py34,old,lts,master
+install: pip install tox
+script: tox -e $TOX_ENV
