@@ -19,7 +19,7 @@ class Tox(TestCommand):
 
 setup(
     name='django-navtag',
-    version='2.1.1',
+    version='2.1.2',
     description=("A simple Django navigation template tag"),
     author='Chris Beaven',
     author_email='smileychris@gmail.com',
