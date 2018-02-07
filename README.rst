@@ -11,10 +11,10 @@ Example
 
 Add the app to your ``INSTALLED_APPS`` setting::
 
-	INSTALLED_APPS = (
-		# ...
-		'django_navtag',
-	)
+    INSTALLED_APPS = (
+        # ...
+        'django_navtag',
+    )
 
 Give your base template a navigation block something like this::
 
@@ -30,12 +30,12 @@ Give your base template a navigation block something like this::
 
 In your templates, extend the base and set the navigation location::
 
-	{% extends "base.html" %}
+    {% extends "base.html" %}
 
-	{% block nav %}
-	{% nav "home" %}
-	{{ block.super }}
-	{% endblock %}
+    {% block nav %}
+    {% nav "home" %}
+    {{ block.super }}
+    {% endblock %}
 
 .. note::
     This works for multiple levels of template inheritance, due to the fact
@@ -60,10 +60,10 @@ Using a different context variable
 By default, this tag creates a ``nav`` context variable. To use an alternate
 context variable name, call ``{% nav [item] for [var_name] %}``::
 
-	{% block nav %}
-	{% nav "home" for sidenav %}
-	{{ block.super }}
-	{% endblock %}
+    {% block nav %}
+    {% nav "home" for sidenav %}
+    {{ block.super }}
+    {% endblock %}
 
 
 Setting the text output by the nav variable
