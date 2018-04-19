@@ -15,6 +15,7 @@ A simple Django template tag to handle navigation item selection.
 
 .. contents::
     :local:
+    :backlinks: none
 
 
 Usage
