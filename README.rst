@@ -1,8 +1,6 @@
 ``{% nav %}`` tag
 =================
 
-A simple Django template tag to handle navigation item selection.
-
 .. image:: https://badge.fury.io/py/django-navtag.svg
    :target: https://badge.fury.io/py/django-navtag
 
@@ -12,17 +10,28 @@ A simple Django template tag to handle navigation item selection.
 .. image:: https://codecov.io/gh/SmileyChris/django-navtag/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/SmileyChris/django-navtag
 
-Example
--------
 
-Add the app to your ``INSTALLED_APPS`` setting::
+A simple Django template tag to handle navigation item selection.
+
+.. contents::
+    :local:
+
+
+Usage
+-----
+
+Add the app to your ``INSTALLED_APPS`` setting:
+
+.. code:: python
 
     INSTALLED_APPS = (
         # ...
         'django_navtag',
     )
 
-Give your base template a navigation block something like this::
+Give your base template a navigation block something like this:
+
+.. code:: jinja
 
     {% load navtag %}
 
@@ -34,7 +43,9 @@ Give your base template a navigation block something like this::
     </ul>
     {% endblock %}
 
-In your templates, extend the base and set the navigation location::
+In your templates, extend the base and set the navigation location:
+
+.. code:: jinja
 
     {% extends "base.html" %}
 
@@ -52,7 +63,9 @@ In your templates, extend the base and set the navigation location::
 Hierarchical navigation
 -----------------------
 
-To create a sub-menu you can check against, simply dot-separate the item::
+To create a sub-menu you can check against, simply dot-separate the item:
+
+.. code:: jinja
 
     {% nav "about_menu.info" %}
 
@@ -64,7 +77,9 @@ Using a different context variable
 ----------------------------------
 
 By default, this tag creates a ``nav`` context variable. To use an alternate
-context variable name, call ``{% nav [item] for [var_name] %}``::
+context variable name, call ``{% nav [item] for [var_name] %}``:
+
+.. code:: jinja
 
     {% block nav %}
     {% nav "home" for sidenav %}
@@ -77,7 +92,9 @@ Setting the text output by the nav variable
 
 As shown in the initial example, you can set the text return value of the
 ``nav`` context variable. Use the format ``{% nav text [content] %}``. For
-example::
+example:
+
+.. code:: jinja
 
     {% nav text "active" %}
     <ul>
@@ -86,7 +103,9 @@ example::
     </ul>
 
 Alternately, you can use boolean comparison of the context variable rather than
-text value::
+text value:
+
+.. code:: jinja
 
     <section{% if nav.home %} class="wide"{% endif %}>
 
