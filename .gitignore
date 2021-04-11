@@ -4,3 +4,4 @@
 .eggs/
 dist/
 .coverage
+.python-version

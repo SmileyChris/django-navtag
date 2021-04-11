@@ -1,14 +1,11 @@
 from django import template
-from django.utils import six, safestring
-from django.utils.encoding import smart_str, python_2_unicode_compatible
-
+from django.utils.encoding import smart_str
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
 
-@python_2_unicode_compatible
 class Nav(object):
-
     def __init__(self, tree=None, root=None):
         self._root = root or self
         self._tree = tree or {}
@@ -17,16 +14,13 @@ class Nav(object):
         return Nav(self._tree[key], root=self._root)
 
     def __str__(self):
-        return safestring.mark_safe(six.text_type(self._text))
+        return mark_safe(str(self._text))
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self._tree)
 
-    # Python 3 equivalent.
-    __bool__ = __nonzero__
-
     def _get_text(self):
-        if hasattr(self._root, '_text_value'):
+        if hasattr(self._root, "_text_value"):
             return self._root._text_value
         return self._tree
 
@@ -43,10 +37,9 @@ class Nav(object):
 
 
 class NavNode(template.Node):
-
     def __init__(self, item=None, var_for=None, var_text=None):
         self.item = item
-        self.var_name = var_for or 'nav'
+        self.var_name = var_for or "nav"
         self.text = var_text
 
     def render(self, context):
@@ -54,8 +47,10 @@ class NavNode(template.Node):
         nav = first_context_stack.get(self.var_name)
         if nav is not context.get(self.var_name):
             raise template.TemplateSyntaxError(
-                "'{0}' variable has been altered in current context"
-                .format(self.var_name))
+                "'{0}' variable has been altered in current context".format(
+                    self.var_name
+                )
+            )
 
         if not isinstance(nav, Nav):
             nav = Nav()
@@ -66,29 +61,29 @@ class NavNode(template.Node):
 
         if self.text:
             nav._text = self.text.resolve(context)
-            return ''
+            return ""
 
         # If self.item was blank then there's nothing else to do here.
         if not self.item:
-            return ''
+            return ""
 
         if nav:
             # If the nav variable is already set, don't do anything.
-            return ''
+            return ""
 
         item = self.item.resolve(context)
         item = item and smart_str(item)
         value = True
         if not item:
-            item = ''
-        for part in reversed(item.split('.')):
+            item = ""
+        for part in reversed(item.split(".")):
             new_item = {}
             new_item[part] = value
             value = new_item
 
         nav.clear()
         nav.update(new_item)
-        return ''
+        return ""
 
     def __repr__(self):
         return "<Nav node>"
@@ -156,7 +151,7 @@ def nav(parser, token):
     bits = token.split_contents()
 
     ok = True
-    keys = {'for': False, 'text': True}
+    keys = {"for": False, "text": True}
     node_kwargs = {}
     while len(bits) > 2:
         value = bits.pop()
@@ -167,17 +162,16 @@ def nav(parser, token):
         compile_filter = keys.pop(key)
         if compile_filter:
             value = parser.compile_filter(value)
-        node_kwargs['var_{0}'.format(key)] = value
+        node_kwargs["var_{0}".format(key)] = value
 
     if len(bits) > 1:
         # Text argument doesn't expect an item.
-        ok = 'text' not in node_kwargs
+        ok = "text" not in node_kwargs
         item = parser.compile_filter(bits[1])
     else:
         item = None
 
     if not ok:
-        raise template.TemplateSyntaxError(
-            'Unexpected format for %s tag' % bits[0])
+        raise template.TemplateSyntaxError("Unexpected format for %s tag" % bits[0])
 
     return NavNode(item, **node_kwargs)
