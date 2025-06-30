@@ -133,6 +133,20 @@ The ``nav`` object supports comparison operations for more flexible navigation h
         {# False - not exact #}
     {% endif %}
 
+**Special patterns with** ``!``:
+
+.. code:: jinja
+
+    {% nav "products.electronics" %}
+    
+    {% if nav == "products!" %}
+        {# True - matches any child of products #}
+    {% endif %}
+    
+    {% if nav == "products!clearance" %}
+        {# True - matches children except 'clearance' #}
+    {% endif %}
+
 **Component checking with** ``in``:
 
 .. code:: jinja
@@ -212,6 +226,37 @@ You can customize the attribute added to active links using ``{% nav text %}`` w
     
     {% navlink 'home' 'home_url' %}Home{% endnavlink %}
     {# Renders: <a href="/" aria-selected="true">Home</a> #}
+
+Special matching patterns
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``{% navlink %}`` tag supports special patterns for more precise matching:
+
+**Children-only pattern** (``item!``):
+
+.. code:: jinja
+
+    {% nav "courses.special" %}
+    
+    {% navlink 'courses' 'course_list' %}All Courses{% endnavlink %}
+    {# Renders as link with class="active" #}
+    
+    {% navlink 'courses!' 'course_detail' %}Course Details{% endnavlink %}
+    {# Renders as link with class="active" - only when nav is a child of courses #}
+
+When ``courses`` is active (not a child), the first link is active but the second becomes a ``<span>``.
+
+**Exclusion pattern** (``item!exclude``):
+
+.. code:: jinja
+
+    {% nav "courses.special" %}
+    
+    {% navlink 'courses!list' 'course_detail' %}Course (not list){% endnavlink %}
+    {# Renders as link - active for any child except 'list' #}
+    
+    {% navlink 'courses!special' 'course_detail' %}Course (not special){% endnavlink %}
+    {# Renders as span - 'special' is excluded #}
 
 Alternate nav context
 ~~~~~~~~~~~~~~~~~~~~~

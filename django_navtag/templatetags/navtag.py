@@ -50,9 +50,32 @@ class Nav(object):
         return ''
     
     def __eq__(self, other):
-        """Check if the active navigation path equals the given value"""
+        """Check if the active navigation path matches the given pattern
+        
+        Patterns:
+        - "item" - exact match
+        - "item!" - children only (not exact match)
+        - "item!exclude" - children except 'exclude'
+        """
         if isinstance(other, str):
-            return self.get_active_path() == other
+            active_path = self.get_active_path()
+            
+            if '!' in other:
+                parts = other.split('!', 1)
+                parent = parts[0]
+                exclude = parts[1] if len(parts) > 1 and parts[1] else None
+                
+                if exclude:
+                    # Pattern like 'courses!list' - match children except specific ones
+                    return (active_path.startswith(parent + '.') and 
+                            active_path != parent and
+                            not active_path.startswith(parent + '.' + exclude))
+                else:
+                    # Pattern like 'courses!' - match children only, not exact
+                    return active_path.startswith(parent + '.') and active_path != parent
+            else:
+                # Normal pattern - exact match
+                return active_path == other
         elif isinstance(other, Nav):
             return self.get_active_path() == other.get_active_path()
         return False
@@ -187,6 +210,10 @@ def nav(parser, token):
         {% if nav == "home" %}              {# True if exactly "home" is active #}
         {% if nav == "products.phones" %}   {# True if exactly "products.phones" is active #}
         
+        {# Children-only matching #}
+        {% if nav == "products!" %}         {# True if any child of products is active #}
+        {% if nav == "products!list" %}     {# True if child of products except 'list' #}
+        
         {# Component checking with 'in' #}
         {% if "products" in nav %}          {# True if active path contains "products" #}
         {% if "phones" in nav %}            {# True if active path contains "phones" #}
@@ -245,13 +272,17 @@ class NavLinkNode(template.Node):
         
         # Check if nav item is active
         try:
-            # Get the current active navigation path
-            active_path = nav.get_active_path() if nav else ''
-            
-            # Check if this nav_link matches the active path
-            is_exact_match = active_path == nav_item
-            is_parent_match = active_path.startswith(nav_item + '.')
-            is_link = is_exact_match or is_parent_match
+            # For normal patterns, check both exact match and parent match
+            # For special patterns (with !), use the Nav's __eq__ method
+            if '!' in nav_item:
+                # Use Nav's __eq__ for special patterns
+                is_link = nav == nav_item
+            else:
+                # Normal pattern - exact match or parent match
+                active_path = nav.get_active_path() if nav else ''
+                is_exact_match = active_path == nav_item
+                is_parent_match = active_path.startswith(nav_item + '.')
+                is_link = is_exact_match or is_parent_match
             
             # Get the text value
             nav_text = ''
@@ -292,6 +323,14 @@ def navlink(parser, token):
     - <a href="/products/" class="active">Products</a> - if nav.products is the active item
     - <a href="/products/">Products</a> - if nav.products is a parent item of nav
     - <span>Products</span> - if nav.products doesn't match
+
+    Special patterns::
+    
+        {% navlink 'courses!' 'course_detail' %}Course Details{% endnavlink %}
+        {# Active only for children like 'courses.special', not 'courses' itself #}
+        
+        {% navlink 'courses!list' 'course_detail' %}Course (not list){% endnavlink %}
+        {# Active for 'courses.special' but not 'courses.list' #}
 
     Use {% navlink 'alt_nav:products' ... %} to specify a different nav context.
     """

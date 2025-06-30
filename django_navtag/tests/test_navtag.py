@@ -364,6 +364,52 @@ class NavTagTest(TestCase):
         self.assertIn("SUBNAV_MATCH", content)
         self.assertNotIn("SUBNAV_NOMATCH", content)
     
+    def test_nav_eq_children_only(self):
+        """Test Nav.__eq__ with 'item!' pattern for children only"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "courses.special" %}
+{% if nav == "courses!" %}CHILD_MATCH{% endif %}
+{% if nav == "courses" %}EXACT_MATCH{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("CHILD_MATCH", content)
+        self.assertNotIn("EXACT_MATCH", content)
+        
+        # Test when exact match (not child)
+        t = template.Template("""
+{% load navtag %}
+{% nav "courses" %}
+{% if nav == "courses!" %}CHILD_MATCH{% endif %}
+{% if nav == "courses" %}EXACT_MATCH{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertNotIn("CHILD_MATCH", content)
+        self.assertIn("EXACT_MATCH", content)
+    
+    def test_nav_eq_exclude_pattern(self):
+        """Test Nav.__eq__ with 'item!exclude' pattern"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "courses.special" %}
+{% if nav == "courses!list" %}NOT_LIST{% endif %}
+{% if nav == "courses!special" %}NOT_SPECIAL{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("NOT_LIST", content)
+        self.assertNotIn("NOT_SPECIAL", content)
+        
+        # Test with excluded item
+        t = template.Template("""
+{% load navtag %}
+{% nav "courses.list" %}
+{% if nav == "courses!list" %}NOT_LIST{% endif %}
+{% if nav == "courses!special" %}NOT_SPECIAL{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertNotIn("NOT_LIST", content)
+        self.assertIn("NOT_SPECIAL", content)
+    
     def test_nav_contains_basic(self):
         """Test Nav.__contains__ for component checking"""
         t = template.Template("""
@@ -404,3 +450,132 @@ NO_NAV_SET
         self.assertNotIn("HOME_IN", content)
         self.assertNotIn("ABOUT_IN", content)
         self.assertIn("NO_NAV_SET", content)
+    
+    def test_navlink_children_only_pattern(self):
+        """Test navlink with 'item!' pattern to match children only"""
+        t = template.Template("""
+{% load navtag %}
+{% nav text ' class="active"' %}
+{% nav "courses.special" %}
+{% navlink 'courses' 'courses' %}All Courses{% endnavlink %}
+{% navlink 'courses!' 'courses' %}Course Details{% endnavlink %}
+{% navlink 'about' 'about' %}About{% endnavlink %}
+""")
+        from django_navtag.templatetags.navtag import NavLinkNode
+        original_render = NavLinkNode.render
+        
+        def patched_render(self, context):
+            # Override URL node rendering
+            original_url_render = self.url_node.render
+            self.url_node.render = lambda ctx: '/' + self.nav_item.resolve(ctx).split('!')[0] + '/'
+            result = original_render(self, context)
+            self.url_node.render = original_url_render
+            return result
+        
+        NavLinkNode.render = patched_render
+        try:
+            content = t.render(template.Context()).strip()
+            # 'courses' should be active (parent match)
+            self.assertIn('<a href="/courses/" class="active">All Courses</a>', content)
+            # 'courses!' should be active (child match)
+            self.assertIn('<a href="/courses/" class="active">Course Details</a>', content)
+            # 'about' should be span
+            self.assertIn('<span>About</span>', content)
+        finally:
+            NavLinkNode.render = original_render
+    
+    def test_navlink_children_only_pattern_exact_match(self):
+        """Test navlink with 'item!' pattern doesn't match exact item"""
+        t = template.Template("""
+{% load navtag %}
+{% nav text ' class="active"' %}
+{% nav "courses" %}
+{% navlink 'courses' 'courses' %}All Courses{% endnavlink %}
+{% navlink 'courses!' 'courses' %}Course Details{% endnavlink %}
+""")
+        from django_navtag.templatetags.navtag import NavLinkNode
+        original_render = NavLinkNode.render
+        
+        def patched_render(self, context):
+            # Override URL node rendering
+            original_url_render = self.url_node.render
+            self.url_node.render = lambda ctx: '/courses/'
+            result = original_render(self, context)
+            self.url_node.render = original_url_render
+            return result
+        
+        NavLinkNode.render = patched_render
+        try:
+            content = t.render(template.Context()).strip()
+            # 'courses' should be active (exact match)
+            self.assertIn('<a href="/courses/" class="active">All Courses</a>', content)
+            # 'courses!' should NOT be active (requires child)
+            self.assertIn('<span>Course Details</span>', content)
+        finally:
+            NavLinkNode.render = original_render
+    
+    def test_navlink_exclude_pattern(self):
+        """Test navlink with 'item!exclude' pattern"""
+        t = template.Template("""
+{% load navtag %}
+{% nav text ' class="active"' %}
+{% nav "courses.special" %}
+{% navlink 'courses' 'courses' %}All Courses{% endnavlink %}
+{% navlink 'courses!list' 'courses' %}Course (not list){% endnavlink %}
+{% navlink 'courses!special' 'courses' %}Course (not special){% endnavlink %}
+""")
+        from django_navtag.templatetags.navtag import NavLinkNode
+        original_render = NavLinkNode.render
+        
+        def patched_render(self, context):
+            # Override URL node rendering
+            original_url_render = self.url_node.render
+            self.url_node.render = lambda ctx: '/courses/'
+            result = original_render(self, context)
+            self.url_node.render = original_url_render
+            return result
+        
+        NavLinkNode.render = patched_render
+        try:
+            content = t.render(template.Context()).strip()
+            # 'courses' should be active (parent match)
+            self.assertIn('<a href="/courses/" class="active">All Courses</a>', content)
+            # 'courses!list' should be active (special is not list)
+            self.assertIn('<a href="/courses/" class="active">Course (not list)</a>', content)
+            # 'courses!special' should NOT be active (special is excluded)
+            self.assertIn('<span>Course (not special)</span>', content)
+        finally:
+            NavLinkNode.render = original_render
+    
+    def test_navlink_exclude_pattern_with_list(self):
+        """Test navlink with 'item!exclude' pattern when list is active"""
+        t = template.Template("""
+{% load navtag %}
+{% nav text ' class="active"' %}
+{% nav "courses.list" %}
+{% navlink 'courses' 'courses' %}All Courses{% endnavlink %}
+{% navlink 'courses!list' 'courses' %}Course (not list){% endnavlink %}
+{% navlink 'courses!special' 'courses' %}Course (not special){% endnavlink %}
+""")
+        from django_navtag.templatetags.navtag import NavLinkNode
+        original_render = NavLinkNode.render
+        
+        def patched_render(self, context):
+            # Override URL node rendering
+            original_url_render = self.url_node.render
+            self.url_node.render = lambda ctx: '/courses/'
+            result = original_render(self, context)
+            self.url_node.render = original_url_render
+            return result
+        
+        NavLinkNode.render = patched_render
+        try:
+            content = t.render(template.Context()).strip()
+            # 'courses' should be active (parent match)
+            self.assertIn('<a href="/courses/" class="active">All Courses</a>', content)
+            # 'courses!list' should NOT be active (list is excluded)
+            self.assertIn('<span>Course (not list)</span>', content)
+            # 'courses!special' should be active (list is not special)
+            self.assertIn('<a href="/courses/" class="active">Course (not special)</a>', content)
+        finally:
+            NavLinkNode.render = original_render
