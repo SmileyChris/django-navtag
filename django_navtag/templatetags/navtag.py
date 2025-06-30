@@ -48,6 +48,25 @@ class Nav(object):
             elif value:
                 return current_path
         return ''
+    
+    def __eq__(self, other):
+        """Check if the active navigation path equals the given value"""
+        if isinstance(other, str):
+            return self.get_active_path() == other
+        elif isinstance(other, Nav):
+            return self.get_active_path() == other.get_active_path()
+        return False
+    
+    def __contains__(self, item):
+        """Check if a component is part of the active navigation path"""
+        if isinstance(item, str):
+            active_path = self.get_active_path()
+            if not active_path:
+                return False
+            # Check if the component matches any part of the path
+            components = active_path.split('.')
+            return item in components
+        return False
 
 
 class NavNode(template.Node):
@@ -161,6 +180,21 @@ def nav(parser, token):
 
     This will be pass for both ``{% if nav.about_menu %}`` and
     ``{% if nav.about_menu.info %}``.
+
+    Comparison operations::
+
+        {# Exact path matching with == #}
+        {% if nav == "home" %}              {# True if exactly "home" is active #}
+        {% if nav == "products.phones" %}   {# True if exactly "products.phones" is active #}
+        
+        {# Component checking with 'in' #}
+        {% if "products" in nav %}          {# True if active path contains "products" #}
+        {% if "phones" in nav %}            {# True if active path contains "phones" #}
+
+        {# Also works on sub-navigation #}
+        {% nav "products.electronics.phones" %}
+        {% if nav.products == "electronics.phones" %}  {# True #}
+        {% if "electronics" in nav.products %}         {# True #}
     """
     bits = token.split_contents()
 

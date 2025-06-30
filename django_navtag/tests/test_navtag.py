@@ -325,3 +325,82 @@ class NavTagTest(TestCase):
             self.assertNotIn('class=', content)
         finally:
             NavLinkNode.render = original_render
+    
+    def test_nav_eq_exact_match(self):
+        """Test Nav.__eq__ for exact path matching"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "home" %}
+{% if nav == "home" %}HOME_EXACT{% endif %}
+{% if nav == "about" %}ABOUT_EXACT{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("HOME_EXACT", content)
+        self.assertNotIn("ABOUT_EXACT", content)
+    
+    def test_nav_eq_hierarchical(self):
+        """Test Nav.__eq__ with hierarchical paths"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "products.electronics" %}
+{% if nav == "products.electronics" %}EXACT_MATCH{% endif %}
+{% if nav == "products" %}PARENT_MATCH{% endif %}
+{% if nav == "electronics" %}CHILD_MATCH{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("EXACT_MATCH", content)
+        self.assertNotIn("PARENT_MATCH", content)
+        self.assertNotIn("CHILD_MATCH", content)
+    
+    def test_nav_eq_with_subnav(self):
+        """Test Nav.__eq__ on sub-navigation objects"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "products.electronics.phones" %}
+{% if nav.products == "electronics.phones" %}SUBNAV_MATCH{% endif %}
+{% if nav.products == "electronics" %}SUBNAV_NOMATCH{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("SUBNAV_MATCH", content)
+        self.assertNotIn("SUBNAV_NOMATCH", content)
+    
+    def test_nav_contains_basic(self):
+        """Test Nav.__contains__ for component checking"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "home" %}
+{% if "home" in nav %}HOME_IN{% endif %}
+{% if "about" in nav %}ABOUT_IN{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("HOME_IN", content)
+        self.assertNotIn("ABOUT_IN", content)
+    
+    def test_nav_contains_hierarchical(self):
+        """Test Nav.__contains__ with hierarchical paths"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "products.electronics.phones" %}
+{% if "products" in nav %}PRODUCTS_IN{% endif %}
+{% if "electronics" in nav %}ELECTRONICS_IN{% endif %}
+{% if "phones" in nav %}PHONES_IN{% endif %}
+{% if "computers" in nav %}COMPUTERS_IN{% endif %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertIn("PRODUCTS_IN", content)
+        self.assertIn("ELECTRONICS_IN", content)
+        self.assertIn("PHONES_IN", content)
+        self.assertNotIn("COMPUTERS_IN", content)
+    
+    def test_nav_contains_empty(self):
+        """Test Nav.__contains__ when no navigation is set"""
+        t = template.Template("""
+{% load navtag %}
+{% if "home" in nav %}HOME_IN{% endif %}
+{% if "about" in nav %}ABOUT_IN{% endif %}
+NO_NAV_SET
+""")
+        content = t.render(template.Context()).strip()
+        self.assertNotIn("HOME_IN", content)
+        self.assertNotIn("ABOUT_IN", content)
+        self.assertIn("NO_NAV_SET", content)

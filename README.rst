@@ -114,6 +114,58 @@ If using a different context variable name, use the format
 ``{% nav text [content] for [var_name] %}``.
 
 
+Comparison operations
+---------------------
+
+The ``nav`` object supports comparison operations for more flexible navigation handling:
+
+**Exact matching with** ``==``:
+
+.. code:: jinja
+
+    {% nav "products.phones" %}
+    
+    {% if nav == "products.phones" %}
+        {# True - exact match #}
+    {% endif %}
+    
+    {% if nav == "products" %}
+        {# False - not exact #}
+    {% endif %}
+
+**Component checking with** ``in``:
+
+.. code:: jinja
+
+    {% nav "products.electronics.phones" %}
+    
+    {% if "products" in nav %}
+        {# True - component exists #}
+    {% endif %}
+    
+    {% if "electronics" in nav %}
+        {# True - component exists #}
+    {% endif %}
+    
+    {% if "tablets" in nav %}
+        {# False - component doesn't exist #}
+    {% endif %}
+
+These operations also work with sub-navigation:
+
+.. code:: jinja
+
+    {% nav "products.electronics.phones" %}
+    
+    {% if nav.products == "electronics.phones" %}
+        {# True #}
+    {% endif %}
+    
+    {% if "electronics" in nav.products %}
+        {# True #}
+    {% endif %}
+
+
 The ``{% navlink %}`` tag
 -------------------------
 
