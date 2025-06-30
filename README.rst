@@ -112,3 +112,64 @@ text value:
 
 If using a different context variable name, use the format
 ``{% nav text [content] for [var_name] %}``.
+
+
+The ``{% navlink %}`` tag
+-------------------------
+
+The ``{% navlink %}`` tag provides a convenient way to create navigation links that automatically change based on the active navigation state. It works as a block tag that renders different HTML elements depending on whether the navigation item is active.
+
+Basic usage:
+
+.. code:: jinja
+
+    {% load navtag %}
+    
+    {% nav text 'active' %}
+    {% nav "products" %}
+    
+    <ul class="nav">
+        {% navlink 'home' 'home_url' %}Home{% endnavlink %}
+        {% navlink 'products' 'product_list' %}Products{% endnavlink %}
+        {% navlink 'contact' 'contact_url' %}Contact{% endnavlink %}
+    </ul>
+
+The tag will render:
+
+- ``<a href="..." class="active">...</a>`` - when the nav item is active
+- ``<a href="...">...</a>`` - when the nav item is a parent of the active item
+- ``<span>...</span>`` - when the nav item is not active
+
+The second parameter uses Django's built-in ``{% url %}`` tag syntax, so you can pass URL names with arguments:
+
+.. code:: jinja
+
+    {% navlink 'product' 'product_detail' product_id=product.id %}
+        {{ product.name }}
+    {% endnavlink %}
+
+Custom attributes
+~~~~~~~~~~~~~~~~~
+
+You can customize the attribute added to active links using ``{% nav text %}`` with an attribute format:
+
+.. code:: jinja
+
+    {% nav text ' aria-selected="true"' %}
+    {% nav "home" %}
+    
+    {% navlink 'home' 'home_url' %}Home{% endnavlink %}
+    {# Renders: <a href="/" aria-selected="true">Home</a> #}
+
+Alternate nav context
+~~~~~~~~~~~~~~~~~~~~~
+
+To use a different navigation context variable, prefix the nav item with the variable name:
+
+.. code:: jinja
+
+    {% nav "products" for mainnav %}
+    {% nav "settings" for sidenav %}
+    
+    {% navlink 'mainnav:products' 'product_list' %}Products{% endnavlink %}
+    {% navlink 'sidenav:settings' 'user_settings' %}Settings{% endnavlink %}

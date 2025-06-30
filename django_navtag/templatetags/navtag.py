@@ -34,6 +34,20 @@ class Nav(object):
 
     def update(self, *args, **kwargs):
         self._tree.update(*args, **kwargs)
+    
+    def get_active_path(self, path=''):
+        """Get the dotted path of the active navigation item"""
+        for key, value in self._tree.items():
+            current_path = path + '.' + key if path else key
+            if isinstance(value, dict):
+                # Recurse into nested nav
+                sub_nav = Nav(value, root=self._root)
+                result = sub_nav.get_active_path(current_path)
+                if result:
+                    return result
+            elif value:
+                return current_path
+        return ''
 
 
 class NavNode(template.Node):
@@ -175,3 +189,98 @@ def nav(parser, token):
         raise template.TemplateSyntaxError("Unexpected format for %s tag" % bits[0])
 
     return NavNode(item, **node_kwargs)
+
+
+class NavLinkNode(template.Node):
+    def __init__(self, nav_item, url_node, nodelist):
+        self.nav_item = nav_item
+        self.url_node = url_node
+        self.nodelist = nodelist
+
+    def render(self, context):
+        nav_item = self.nav_item.resolve(context)
+        
+        # Check if alternate nav variable specified with ':'
+        var_name = "nav"
+        if ':' in nav_item:
+            var_name, nav_item = nav_item.split(':', 1)
+        
+        nav = context.get(var_name)
+        if not isinstance(nav, Nav):
+            nav = Nav()
+        
+        # Check if nav item is active
+        try:
+            # Get the current active navigation path
+            active_path = nav.get_active_path() if nav else ''
+            
+            # Check if this nav_link matches the active path
+            is_exact_match = active_path == nav_item
+            is_parent_match = active_path.startswith(nav_item + '.')
+            is_link = is_exact_match or is_parent_match
+            
+            # Get the text value
+            nav_text = ''
+            if is_link and hasattr(nav, '_text_value') and nav._text_value:
+                nav_text = nav._text_value
+                if "=" not in nav_text:
+                    nav_text = ' class="{}"'.format(nav_text.strip())
+        except (KeyError, AttributeError):
+            is_link = False
+            nav_text = ""
+        
+        # Get the URL from the url node
+        url = self.url_node.render(context)
+        
+        # Get the content inside the block
+        content = self.nodelist.render(context)
+        
+        # Determine which element to render
+        if is_link:
+            # Truthy but not exact - render as regular link
+            return '<a href="{}"{}>{}</a>'.format(url, nav_text, content)
+        else:
+            # Falsy - render as span
+            return '<span>{}</span>'.format(content)
+
+
+@register.tag
+def navlink(parser, token):
+    """
+    Renders a link that changes based on navigation state.
+    
+    Usage::
+        
+        {% nav text ' class="active"' %}
+        {% navlink 'products' 'products:list' %}Products{% endnavlink %}
+    
+    Renders as:
+    - <a href="/products/" class="active">Products</a> - if nav.products is the active item
+    - <a href="/products/">Products</a> - if nav.products is a parent item of nav
+    - <span>Products</span> - if nav.products doesn't match
+
+    Use {% navlink 'alt_nav:products' ... %} to specify a different nav context.
+    """
+    from django.template.defaulttags import url
+
+    bits = token.split_contents()
+    
+    if len(bits) < 3:
+        raise template.TemplateSyntaxError(
+            "{} tag requires at least two arguments: nav item and url name".format(bits[0])
+        )
+    
+    # First argument is the nav item
+    nav_item = parser.compile_filter(bits[1])
+    
+    # The rest is passed to the url tag
+    url_bits = ['url'] + bits[2:]
+    url_token = token.__class__(token.token_type, ' '.join(url_bits), token.position, token.lineno)
+    
+    url_node = url(parser, url_token)
+    
+    # Parse until endnavlink
+    nodelist = parser.parse(('endnavlink',))
+    parser.delete_first_token()
+    
+    return NavLinkNode(nav_item, url_node, nodelist)
