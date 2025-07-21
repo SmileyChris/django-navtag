@@ -173,10 +173,6 @@ class NavTagTest(TestCase):
     
     def test_navlink_active(self):
         """Test navlink when the nav item is active"""
-        # Mock URL resolution
-        def mock_url_tag_render(context):
-            return "/products/"
-        
         t = template.Template(NAV_LINK_TEMPLATE)
         # We need to patch the url rendering since we don't have URL conf
         from django_navtag.templatetags.navtag import NavLinkNode
