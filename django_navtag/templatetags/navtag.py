@@ -34,11 +34,11 @@ class Nav(object):
 
     def update(self, *args, **kwargs):
         self._tree.update(*args, **kwargs)
-    
-    def get_active_path(self, path=''):
+
+    def get_active_path(self, path=""):
         """Get the dotted path of the active navigation item"""
         for key, value in self._tree.items():
-            current_path = path + '.' + key if path else key
+            current_path = path + "." + key if path else key
             if isinstance(value, dict):
                 # Recurse into nested nav
                 sub_nav = Nav(value, root=self._root)
@@ -47,11 +47,11 @@ class Nav(object):
                     return result
             elif value:
                 return current_path
-        return ''
-    
+        return ""
+
     def __eq__(self, other):
         """Check if the active navigation path matches the given pattern
-        
+
         Patterns:
         - "item" - exact match
         - "item!" - children only (not exact match)
@@ -59,27 +59,31 @@ class Nav(object):
         """
         if isinstance(other, str):
             active_path = self.get_active_path()
-            
-            if '!' in other:
-                parts = other.split('!', 1)
+
+            if "!" in other:
+                parts = other.split("!", 1)
                 parent = parts[0]
                 exclude = parts[1] if len(parts) > 1 and parts[1] else None
-                
+
                 if exclude:
                     # Pattern like 'courses!list' - match children except specific ones
-                    return (active_path.startswith(parent + '.') and 
-                            active_path != parent and
-                            not active_path.startswith(parent + '.' + exclude))
+                    return (
+                        active_path.startswith(parent + ".")
+                        and active_path != parent
+                        and not active_path.startswith(parent + "." + exclude)
+                    )
                 else:
                     # Pattern like 'courses!' - match children only, not exact
-                    return active_path.startswith(parent + '.') and active_path != parent
+                    return (
+                        active_path.startswith(parent + ".") and active_path != parent
+                    )
             else:
                 # Normal pattern - exact match
                 return active_path == other
         elif isinstance(other, Nav):
             return self.get_active_path() == other.get_active_path()
         return False
-    
+
     def __contains__(self, item):
         """Check if a component is part of the active navigation path"""
         if isinstance(item, str):
@@ -87,7 +91,7 @@ class Nav(object):
             if not active_path:
                 return False
             # Check if the component matches any part of the path
-            components = active_path.split('.')
+            components = active_path.split(".")
             return item in components
         return False
 
@@ -209,11 +213,11 @@ def nav(parser, token):
         {# Exact path matching with == #}
         {% if nav == "home" %}              {# True if exactly "home" is active #}
         {% if nav == "products.phones" %}   {# True if exactly "products.phones" is active #}
-        
+
         {# Children-only matching #}
         {% if nav == "products!" %}         {# True if any child of products is active #}
         {% if nav == "products!list" %}     {# True if child of products except 'list' #}
-        
+
         {# Component checking with 'in' #}
         {% if "products" in nav %}          {# True if active path contains "products" #}
         {% if "phones" in nav %}            {# True if active path contains "phones" #}
@@ -260,75 +264,75 @@ class NavLinkNode(template.Node):
 
     def render(self, context):
         nav_item = self.nav_item.resolve(context)
-        
+
         # Check if alternate nav variable specified with ':'
         var_name = "nav"
-        if ':' in nav_item:
-            var_name, nav_item = nav_item.split(':', 1)
-        
+        if ":" in nav_item:
+            var_name, nav_item = nav_item.split(":", 1)
+
         nav = context.get(var_name)
         if not isinstance(nav, Nav):
             nav = Nav()
-        
+
         # Check if nav item is active
         try:
             # For normal patterns, check both exact match and parent match
             # For special patterns (with !), use the Nav's __eq__ method
-            if '!' in nav_item:
+            if "!" in nav_item:
                 # Use Nav's __eq__ for special patterns
                 is_link = nav == nav_item
             else:
                 # Normal pattern - exact match or parent match
-                active_path = nav.get_active_path() if nav else ''
+                active_path = nav.get_active_path() if nav else ""
                 is_exact_match = active_path == nav_item
-                is_parent_match = active_path.startswith(nav_item + '.')
+                is_parent_match = active_path.startswith(nav_item + ".")
                 is_link = is_exact_match or is_parent_match
-            
+
             # Get the text value
-            nav_text = ''
-            if is_link and hasattr(nav, '_text_value') and nav._text_value:
+            nav_text = ""
+            if is_link and hasattr(nav, "_text_value") and nav._text_value:
                 nav_text = nav._text_value
                 if "=" not in nav_text:
                     nav_text = ' class="{}"'.format(nav_text.strip())
         except (KeyError, AttributeError):
             is_link = False
             nav_text = ""
-        
+
         # Get the URL from the url node
         url = self.url_node.render(context)
-        
+
         # Get the content inside the block
         content = self.nodelist.render(context)
-        
+
         # Determine which element to render
         if is_link:
             # Truthy but not exact - render as regular link
             return '<a href="{}"{}>{}</a>'.format(url, nav_text, content)
         else:
             # Falsy - render as span
-            return '<span>{}</span>'.format(content)
+            return "<span>{}</span>".format(content)
 
 
 @register.tag
 def navlink(parser, token):
     """
     Renders a link that changes based on navigation state.
-    
+
     Usage::
-        
+
         {% nav text ' class="active"' %}
         {% navlink 'products' 'products:list' %}Products{% endnavlink %}
-    
+
     Renders as:
     - <a href="/products/" class="active">Products</a> - if nav.products is the active item
     - <a href="/products/">Products</a> - if nav.products is a parent item of nav
     - <span>Products</span> - if nav.products doesn't match
 
     Special patterns::
-    
+
         {% navlink 'courses!' 'course_detail' %}Course Details{% endnavlink %}
         {# Active only for children like 'courses.special', not 'courses' itself #}
-        
+
         {% navlink 'courses!list' 'course_detail' %}Course (not list){% endnavlink %}
         {# Active for 'courses.special' but not 'courses.list' #}
 
@@ -337,23 +341,27 @@ def navlink(parser, token):
     from django.template.defaulttags import url
 
     bits = token.split_contents()
-    
+
     if len(bits) < 3:
         raise template.TemplateSyntaxError(
-            "{} tag requires at least two arguments: nav item and url name".format(bits[0])
+            "{} tag requires at least two arguments: nav item and url name".format(
+                bits[0]
+            )
         )
-    
+
     # First argument is the nav item
     nav_item = parser.compile_filter(bits[1])
-    
+
     # The rest is passed to the url tag
-    url_bits = ['url'] + bits[2:]
-    url_token = token.__class__(token.token_type, ' '.join(url_bits), token.position, token.lineno)
-    
+    url_bits = ["url"] + bits[2:]
+    url_token = token.__class__(
+        token.token_type, " ".join(url_bits), token.position, token.lineno
+    )
+
     url_node = url(parser, url_token)
-    
+
     # Parse until endnavlink
-    nodelist = parser.parse(('endnavlink',))
+    nodelist = parser.parse(("endnavlink",))
     parser.delete_first_token()
-    
+
     return NavLinkNode(nav_item, url_node, nodelist)
