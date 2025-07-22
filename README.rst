@@ -4,9 +4,6 @@
 .. image:: https://badge.fury.io/py/django-navtag.svg
    :target: https://badge.fury.io/py/django-navtag
 
-.. image:: https://travis-ci.org/SmileyChris/django-navtag.svg?branch=master
-   :target: http://travis-ci.org/SmileyChris/django-navtag
-
 .. image:: https://codecov.io/gh/SmileyChris/django-navtag/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/SmileyChris/django-navtag
 
@@ -257,6 +254,14 @@ When ``courses`` is active (not a child), the first link is active but the secon
     
     {% navlink 'courses!special' 'course_detail' %}Course (not special){% endnavlink %}
     {# Renders as span - 'special' is excluded #}
+
+You can also use these patterns with ``{% if %}`` statements:
+
+.. code:: jinja
+
+    {% if nav == "courses!" %}
+        {# True - matches any child of courses #}
+    {% endif %}
 
 Alternate nav context
 ~~~~~~~~~~~~~~~~~~~~~
