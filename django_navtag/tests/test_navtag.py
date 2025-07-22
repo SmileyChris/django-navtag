@@ -601,3 +601,41 @@ NO_NAV_SET
             )
         finally:
             NavLinkNode.render = original_render
+
+    def test_nav_iter_basic(self):
+        """Test Nav.__iter__ returns active path components"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "home" %}
+{% for component in nav %}{{ component }}|{% endfor %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertEqual(content, "home|")
+
+    def test_nav_iter_hierarchical(self):
+        """Test Nav.__iter__ with hierarchical paths"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "products.electronics.phones" %}
+{% for component in nav %}{{ component }}|{% endfor %}
+""")
+        content = t.render(template.Context()).strip()
+        self.assertEqual(content, "products|electronics|phones|")
+
+    def test_nav_iter_empty(self):
+        """Test Nav.__iter__ when no navigation is set"""
+        t = template.Template("""
+{% load navtag %}
+{% for component in nav %}{{ component }}|{% endfor %}EMPTY
+""")
+        content = t.render(template.Context()).strip()
+        self.assertEqual(content, "EMPTY")
+
+    def test_nav_iter_with_list(self):
+        """Test Nav.__iter__ can be converted to list"""
+        from django_navtag.templatetags.navtag import Nav
+
+        nav = Nav()
+        nav.update({"products": {"electronics": {"phones": True}}})
+        components = list(nav)
+        self.assertEqual(components, ["products", "electronics", "phones"])

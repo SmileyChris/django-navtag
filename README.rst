@@ -186,6 +186,32 @@ These operations also work with sub-navigation:
     {% endif %}
 
 
+Iteration
+---------
+
+The ``nav`` object supports iteration over its active path components:
+
+.. code:: jinja
+
+    {% nav "products.electronics.phones" %}
+    
+    {% for component in nav %}
+        {{ component }}
+        {# Outputs: products, electronics, phones #}
+    {% endfor %}
+
+This also works with sub-navigation:
+
+.. code:: jinja
+
+    {% nav "products.electronics.phones" %}
+    
+    {% for component in nav.products %}
+        {{ component }}
+        {# Outputs: electronics, phones #}
+    {% endfor %}
+
+
 The ``{% navlink %}`` tag
 -------------------------
 

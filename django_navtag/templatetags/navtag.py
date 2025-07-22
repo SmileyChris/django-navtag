@@ -95,6 +95,13 @@ class Nav(object):
             return item in components
         return False
 
+    def __iter__(self):
+        """Iterate over the active path components"""
+        active_path = self.get_active_path()
+        if active_path:
+            for part in active_path.split("."):
+                yield part
+
 
 class NavNode(template.Node):
     def __init__(self, item=None, var_for=None, var_text=None):
@@ -226,6 +233,12 @@ def nav(parser, token):
         {% nav "products.electronics.phones" %}
         {% if nav.products == "electronics.phones" %}  {# True #}
         {% if "electronics" in nav.products %}         {# True #}
+
+        {# Iteration over active path components #}
+        {% nav "products.electronics.phones" %}
+        {% for component in nav.products %}
+            {{ component }}  {# Outputs: electronics, phones #}
+        {% endfor %}
     """
     bits = token.split_contents()
 
