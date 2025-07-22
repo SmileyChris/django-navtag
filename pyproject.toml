@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69.0", "wheel"]
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,10 +7,8 @@ name = "django-navtag"
 version = "3.3.dev0"
 description = "A simple Django navigation template tag"
 readme = "README.rst"
-authors = [
-    {name = "Chris Beaven", email = "smileychris@gmail.com"},
-]
-license = {text = "MIT"}
+authors = [{ name = "Chris Beaven", email = "smileychris@gmail.com" }]
+license = "MIT"
 keywords = ["django", "templates"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -19,7 +17,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -30,7 +27,7 @@ classifiers = [
     "Framework :: Django :: 5.0",
     "Framework :: Django :: 5.1",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = []
 
 [project.urls]
@@ -46,9 +43,6 @@ dev = [
     "pytest-cov",
     "ruff",
     "coverage[toml]",
-]
-maintainer = [
-    "zest.releaser[recommended]",
 ]
 
 [tool.setuptools]
@@ -72,6 +66,3 @@ source = ["django_navtag"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "django_navtag.tests.settings"
 filterwarnings = "module"
-
-[tool.zest-releaser]
-tag-signing = true
