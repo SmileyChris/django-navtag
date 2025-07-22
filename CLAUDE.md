@@ -44,7 +44,7 @@ tox -e py39-django32
 tox -e readme
 
 # Run coverage checks (100% for tests, 90% for main code)
-tox -e coverage_setup,coverage_report
+tox -e coverage
 ```
 
 ### Release Process
@@ -77,5 +77,5 @@ The Nav class is the core of the library, providing:
 - Django settings module: `django_navtag.tests.settings`
 
 ## Python/Django Support
-- Python: 3.6-3.9 (Python 3 only)
-- Django: 1.11, 2.2, 3.0, 3.1, 3.2
+- Python: 3.8-3.12
+- Django: 3.2, 4.2, 5.0, 5.1

@@ -15,6 +15,15 @@ A simple Django template tag to handle navigation item selection.
     :backlinks: none
 
 
+Installation
+------------
+
+Install the package using pip:
+
+.. code:: bash
+
+    pip install django-navtag
+
 Usage
 -----
 
