@@ -37,6 +37,9 @@ class Nav(object):
 
     def get_active_path(self, path=""):
         """Get the dotted path of the active navigation item"""
+        # Handle case where _tree is not a dict (e.g., True for leaf nodes)
+        if not isinstance(self._tree, dict):
+            return ""
         for key, value in self._tree.items():
             current_path = path + "." + key if path else key
             if isinstance(value, dict):

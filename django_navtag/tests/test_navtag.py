@@ -639,3 +639,15 @@ NO_NAV_SET
         nav.update({"products": {"electronics": {"phones": True}}})
         components = list(nav)
         self.assertEqual(components, ["products", "electronics", "phones"])
+
+    def test_nav_iter_on_exact_path(self):
+        """Test Nav.__iter__ when accessing exact matching path"""
+        t = template.Template("""
+{% load navtag %}
+{% nav "products" %}
+{% for component in nav.products %}{{ component }}|{% endfor %}END
+""")
+        content = t.render(template.Context()).strip()
+        # When products is the exact match, nav.products returns True
+        # We should still be able to iterate (even if empty)
+        self.assertEqual(content, "END")
